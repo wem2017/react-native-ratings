@@ -109,88 +109,86 @@ export type TapRatingProps = {
   starStyle?: StyleProp<ViewStyle>;
 };
 
-const TapRating: React.FunctionComponent<TapRatingProps> = (props) => {
-  const [position, setPosition] = useState<number>(props.defaultRating);
+const TapRating: React.FunctionComponent<TapRatingProps> =
+  ({
+     defaultRating = 3,
+     reviews = ["Terrible", "Bad", "Okay", "Good", "Great"],
+     count = 5,
+     showRating = true,
+     reviewColor = "rgba(230, 196, 46, 1)",
+     reviewSize = 25,
+     ...props
+   }) => {
+    const [position, setPosition] = useState<number>(defaultRating);
 
-  useEffect(() => {
-    const { defaultRating } = props;
+    useEffect(() => {
 
-    if (defaultRating === null || defaultRating === undefined) {
-      setPosition(3);
-    } else {
-      setPosition(defaultRating);
+      if (defaultRating === null || defaultRating === undefined) {
+        setPosition(3);
+      } else {
+        setPosition(defaultRating);
+      }
+    }, [defaultRating]);
+
+    const renderStars = (rating_array) => {
+      return _.map(rating_array, (star) => {
+        return star;
+      });
+    };
+
+    const starSelectedInPosition = (position) => {
+      const { onFinishRating } = props;
+
+      if (typeof onFinishRating === "function") {
+        onFinishRating(position);
+      }
+
+      setPosition(position);
+    };
+
+    const rating_array = [];
+    const starContainerStyle = [styles.starContainer];
+
+    if (props.starContainerStyle) {
+      starContainerStyle.push(props.starContainerStyle);
     }
-  }, [props.defaultRating]);
 
-  const renderStars = (rating_array) => {
-    return _.map(rating_array, (star) => {
-      return star;
+    const ratingContainerStyle = [styles.ratingContainer];
+
+    if (props.ratingContainerStyle) {
+      ratingContainerStyle.push(props.ratingContainerStyle);
+    }
+
+    _.times(count, (index) => {
+      rating_array.push(
+        <Star
+          key={index}
+          position={index + 1}
+          starSelectedInPosition={(value) => {
+            starSelectedInPosition(value);
+          }}
+          fill={position >= index + 1}
+          {...props}
+        />
+      );
     });
-  };
 
-  const starSelectedInPosition = (position) => {
-    const { onFinishRating } = props;
-
-    if (typeof onFinishRating === "function") {
-      onFinishRating(position);
-    }
-
-    setPosition(position);
-  };
-
-  const { count, reviews, showRating, reviewColor, reviewSize } = props;
-  const rating_array = [];
-  const starContainerStyle = [styles.starContainer];
-
-  if (props.starContainerStyle) {
-    starContainerStyle.push(props.starContainerStyle);
-  }
-
-  const ratingContainerStyle = [styles.ratingContainer];
-
-  if (props.ratingContainerStyle) {
-    ratingContainerStyle.push(props.ratingContainerStyle);
-  }
-
-  _.times(count, (index) => {
-    rating_array.push(
-      <Star
-        key={index}
-        position={index + 1}
-        starSelectedInPosition={(value) => {
-          starSelectedInPosition(value);
-        }}
-        fill={position >= index + 1}
-        {...props}
-      />
+    return (
+      <View style={ratingContainerStyle}>
+        {showRating && (
+          <Text
+            style={[
+              styles.reviewText,
+              { fontSize: reviewSize, color: reviewColor },
+            ]}
+          >
+            {reviews[position - 1]}
+          </Text>
+        )}
+        <View style={starContainerStyle}>{renderStars(rating_array)}</View>
+      </View>
     );
-  });
-
-  return (
-    <View style={ratingContainerStyle}>
-      {showRating && (
-        <Text
-          style={[
-            styles.reviewText,
-            { fontSize: reviewSize, color: reviewColor },
-          ]}
-        >
-          {reviews[position - 1]}
-        </Text>
-      )}
-      <View style={starContainerStyle}>{renderStars(rating_array)}</View>
-    </View>
-  );
-};
-
-TapRating.defaultProps = {
-  defaultRating: 3,
-  reviews: ["Terrible", "Bad", "Okay", "Good", "Great"],
-  count: 5,
-  showRating: true,
-  reviewColor: "rgba(230, 196, 46, 1)",
-  reviewSize: 25,
-};
+  };
 
 const styles = StyleSheet.create({
   ratingContainer: {
